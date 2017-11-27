@@ -36,3 +36,31 @@ func OpenByBrowser(uri string) (err error) {
 		return exec.Command(run, uri).Start()
 	}
 }
+
+//url的query请求解析，如：http://example.com?name=truthhun&age=18&hobbies[]=football&hobbies[]=swimming，则这里的QueryStr为问号后面的部分
+//@param		QueryStr		请求字符串
+//@return		params			解析后的参数，如果有select或者checkbox等多选的情况下，则interface{}为[]string类型，否则都是string，在使用的时候，用类型断言即可
+//需要注意的是，如果请求参数中的参数名带有“[]”，那么解析后的参数中也是带有中括号的
+//功能类似url.ParseQuery
+func ParseUrlQuery(QueryStr string) (params map[string]interface{}) {
+	var kvs = make(map[string][]string)
+	slice := strings.Split(QueryStr, "&")
+	params = make(map[string]interface{})
+	if len(slice) > 0 {
+		for _, q := range slice {
+			if param := strings.Split(q, "="); len(param) == 2 {
+				if strings.HasSuffix(param[0], "[]") { //单个key存在多值
+					kvs[param[0]] = append(kvs[param[0]], param[1])
+				} else {
+					params[param[0]] = param[1]
+				}
+			}
+		}
+	}
+	if len(kvs) > 0 {
+		for k, v := range kvs {
+			params[k] = v
+		}
+	}
+	return
+}
