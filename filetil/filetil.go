@@ -6,6 +6,11 @@ import (
 	"strings"
 )
 
+//==================================
+//更多文件和目录的操作，使用filepath包和os包
+//==================================
+
+//返回的目录扫描结果
 type FileList struct {
 	IsDir   bool   //是否是目录
 	Path    string //文件路径
