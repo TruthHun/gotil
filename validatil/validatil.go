@@ -18,31 +18,31 @@ func testValid() {
 	fmt.Println(len("地球"))
 	fmt.Println(len("go"))
 	fmt.Println(strings.Count("地球", "") - 1)
-	fmt.Println("是否满足最小值要求", execValid("100", "min", "120"))
-	fmt.Println("是否满足最大值要求", execValid("100", "max", "90"))
-	fmt.Println("是否满足最大长度要求", execValid("123sdaswerew", "maxlen", "5"))
-	fmt.Println("是否满足最小长度要求", execValid("21312dsafadf", "minlen", "50"))
-	fmt.Println("是否满足指定长度", execValid("13fadfwerwr", "len", "50"))
-	fmt.Println("邮箱格式验证", execValid("1231das#qq.com", "email"), execValid("1231das@qq.com", "email"))
-	fmt.Println("座机", execValid("0771-6772237", "tel"))
-	fmt.Println("座机", execValid("0771-677223711", "tel"))
-	fmt.Println("手机号码", execValid("13687717717", "mobile"))
-	fmt.Println("手机号码", execValid("53687717717", "mobile"))
-	fmt.Println("enum", execValid("123", "enum", "1234", "457"))
-	fmt.Println("range", execValid("100", "range", "1", "10"))
-	fmt.Println("邮政编码", execValid("518000", "zipcode"))
-	fmt.Println("邮政编码", execValid("5180001", "zipcode"))
-	fmt.Println("IP", execValid("127.0.0.1", "ip"))
-	fmt.Println("IP", execValid("1809.1.1.1", "ip"))
-	fmt.Println("字母验证", execValid("12312asdasda", "alpha"))
-	fmt.Println("字母验证", execValid("asADASDdasda", "alpha"))
-	fmt.Println("是否是数字", execValid("123123", "numeric"))
-	fmt.Println("是否是数字", execValid("12312.23", "numeric"))
-	fmt.Println("数字字母", execValid("1231212asdfasdfAASDAS", "alphanumeric"))
-	fmt.Println("数字字母", execValid("1231212asd..fasdfAASDAS", "alphanumeric"))
-	fmt.Println("数字字母横线", execValid("1231212asd|\asfasdfAASDAS", "alphadash"))
-	fmt.Println("数字字母横线", execValid("1231212-_dfAASDAS", "alphadash"))
-	fmt.Println("正则规则验证", execValid("pe111?sach", "regexp", "p([a-z]+)ch"))
+	fmt.Println("是否满足最小值要求", ExecValid("100", "min", "120"))
+	fmt.Println("是否满足最大值要求", ExecValid("100", "max", "90"))
+	fmt.Println("是否满足最大长度要求", ExecValid("123sdaswerew", "maxlen", "5"))
+	fmt.Println("是否满足最小长度要求", ExecValid("21312dsafadf", "minlen", "50"))
+	fmt.Println("是否满足指定长度", ExecValid("13fadfwerwr", "len", "50"))
+	fmt.Println("邮箱格式验证", ExecValid("1231das#qq.com", "email"), ExecValid("1231das@qq.com", "email"))
+	fmt.Println("座机", ExecValid("0771-6772237", "tel"))
+	fmt.Println("座机", ExecValid("0771-677223711", "tel"))
+	fmt.Println("手机号码", ExecValid("13687717717", "mobile"))
+	fmt.Println("手机号码", ExecValid("53687717717", "mobile"))
+	fmt.Println("enum", ExecValid("123", "enum", "1234", "457"))
+	fmt.Println("range", ExecValid("100", "range", "1", "10"))
+	fmt.Println("邮政编码", ExecValid("518000", "zipcode"))
+	fmt.Println("邮政编码", ExecValid("5180001", "zipcode"))
+	fmt.Println("IP", ExecValid("127.0.0.1", "ip"))
+	fmt.Println("IP", ExecValid("1809.1.1.1", "ip"))
+	fmt.Println("字母验证", ExecValid("12312asdasda", "alpha"))
+	fmt.Println("字母验证", ExecValid("asADASDdasda", "alpha"))
+	fmt.Println("是否是数字", ExecValid("123123", "numeric"))
+	fmt.Println("是否是数字", ExecValid("12312.23", "numeric"))
+	fmt.Println("数字字母", ExecValid("1231212asdfasdfAASDAS", "alphanumeric"))
+	fmt.Println("数字字母", ExecValid("1231212asd..fasdfAASDAS", "alphanumeric"))
+	fmt.Println("数字字母横线", ExecValid("1231212asd|\asfasdfAASDAS", "alphadash"))
+	fmt.Println("数字字母横线", ExecValid("1231212-_dfAASDAS", "alphadash"))
+	fmt.Println("正则规则验证", ExecValid("pe111?sach", "regexp", "p([a-z]+)ch"))
 
 	var vals url.Values
 	rules := map[string][]string{
@@ -132,7 +132,7 @@ func Valid(params url.Values, rules map[string][]string) (map[string]interface{}
 				for _, r := range slice {
 					//规则切分，如range:1:10
 					r_slice := strings.Split(r, ":")
-					err = execValid(v, r_slice[0], r_slice[1:]...)
+					err = ExecValid(v, r_slice[0], r_slice[1:]...)
 					if err == nil {
 						data[key] = v
 					} else {
@@ -165,7 +165,7 @@ func Valid(params url.Values, rules map[string][]string) (map[string]interface{}
 //@param            rule        验证规则，见Valid()注释
 //@param            args        变参参数
 //@return                       返回验证错误
-func execValid(val, rule string, args ...string) error {
+func ExecValid(val, rule string, args ...string) error {
 	rule = strings.ToLower(rule)
 	switch rule {
 	//验证邮箱格式
