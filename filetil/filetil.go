@@ -31,7 +31,7 @@ func ScanFiles(dir string) (fl []FileList, err error) {
 			fl = append(fl, FileList{
 				IsDir:   info.IsDir(),
 				Path:    path,
-				Ext:     filepath.Ext(path),
+				Ext:     strings.ToLower(filepath.Ext(path)),
 				Name:    info.Name(),
 				Size:    info.Size(),
 				ModTime: info.ModTime().Unix(),
