@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"crypto/tls"
+
 	"github.com/astaxie/beego/httplib"
 )
 
@@ -36,22 +38,35 @@ func BuildRequest(method, url, referrer, cookie, os string, iscn, isjson bool, h
 		req = httplib.Get(url)
 	}
 
+	//https请求处理
+	if strings.HasPrefix(strings.ToLower(url), "https") {
+		req.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+	}
+
 	//设置referrer
 	if len(referrer) > 0 {
 		req.Header("Referrer", referrer)
+	} else { //设置默认referer
+		if slice := strings.Split(url, "://"); len(slice) > 1 {
+			req.Header("Referrer", slice[0]+"://"+strings.Split(slice[1], "/")[0])
+		}
 	}
+
 	//设置cookie
 	if len(cookie) > 0 {
 		req.Header("Cookie", cookie)
 	}
-	//设置host
-	host_slice := strings.Split(url, "://")
-	if len(host_slice) > 1 {
-		host := strings.Split(host_slice[1], "/")[0]
-		req.SetHost(host)
-	}
-	//压缩
+
+	//设置host[如有需求，自行在headers中添加]
+	//host_slice := strings.Split(url, "://")
+	//if len(host_slice) > 1 {
+	//	host := strings.Split(host_slice[1], "/")[0]
+	//	req.SetHost(host)
+	//}
+
+	//压缩[如有需求，自行在headers中添加]
 	//req.Header("Accept-Encoding", "gzip, deflate, br")
+
 	//中文
 	if iscn {
 		req.Header("Accept-Language", "zh-CN,zh;q=0.8,en;q=0.6")
