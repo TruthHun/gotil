@@ -3,11 +3,17 @@ package util
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"crypto/tls"
 
+	"path/filepath"
+
+	"github.com/TruthHun/gotil/cryptil"
 	"github.com/astaxie/beego/httplib"
 )
 
@@ -131,4 +137,81 @@ func InterfaceToInt64(itf interface{}) (num int64, err error) {
 //@param			err				错误
 func InterfaceToFloat64(itf interface{}) (num float64, err error) {
 	return strconv.ParseFloat(fmt.Sprintf("%v", itf), 64)
+}
+
+//下载图片文件
+//@param			filelink			需要采集的文件链接
+//@param			savefolder			采集的文件存放路径
+//@param			timeout				超时时间，默认30秒
+//@return			filepath			采集下载返回的文件
+//@return			err					错误。当不为nil的时候，文件不会存在
+func CrawlFile(filelink string, savefolder string, timeout ...int) (file string, err error) {
+	var (
+		resp         *http.Response //响应
+		ContentTypes = map[string]string{
+			//以下是图片
+			"image/png":         ".png",
+			"image/jpeg":        ".jpg",
+			"image/jpg":         ".jpg",
+			"image/gif":         ".gif",
+			"image/x-icon":      ".ico",
+			"image/tiff":        ".tif",
+			"image/webp":        ".webp",
+			"application/x-bmp": ".bmp",
+			"application/x-jpg": ".jpg",
+			//文档文件
+			"application/pdf":               ".pdf",
+			"application/msword":            ".doc",
+			"application/vnd.ms-powerpoint": ".ppt",
+			"application/vnd.ms-excel":      ".xls",
+			//多媒体文件
+			"application/xml":        ".xml",
+			"application/json":       ".json",
+			"application/javascript": ".js",
+			"application/ogg":        ".ogg",
+			"application/xhtml+xml":  ".xhtml",
+			"application/zip":        ".zip",
+			"application/x-ico":      ".ico",
+			"text/html":              ".html",
+			"audio/mp3":              ".mp3",
+			"audio/mp4":              ".mp4",
+			"audio/wav": ".wav	",
+			"audio/x-ms-wax":    ".wax",
+			"video/x-ms-asf":    ".asf",
+			"video/avi":         ".avi",
+			"video/x-sgi-movie": ".movie",
+			"video/mpeg4":       ".mp4",
+			"video/x-mpg":       ".mpa",
+			"video/x-mpeg":      ".mpe",
+			"video/mpg":         ".mpg",
+			"video/x-ms-wm":     ".wm",
+			"video/x-ms-wmv":    ".wmv",
+			"audio/x-ms-wma":    ".wma",
+		}
+	)
+	to := 30 //timeout,默认30秒
+	if len(timeout) > 0 {
+		to = timeout[0]
+	}
+
+	duration := time.Duration(to)
+
+	req := BuildRequest("get", filelink, "", "", "mac", true, false)
+	if strings.HasPrefix(filelink, "https") {
+		req.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+	}
+	req.SetTimeout(duration/2*time.Second, duration*time.Second)
+	if resp, err = req.DoRequest(); err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		os.MkdirAll(savefolder, os.ModePerm)
+		ct := strings.ToLower(resp.Header.Get("content-type"))
+		if ext, ok := ContentTypes[ct]; ok {
+			file = strings.TrimRight(savefolder, "/") + "/" + cryptil.Md5Crypt(filelink) + ext
+		} else {
+			if iext := filepath.Ext(strings.Split(filelink, "?")[0]); len(iext) > 0 {
+				file = strings.TrimRight(savefolder, "/") + "/" + cryptil.Md5Crypt(filelink) + iext
+			}
+		}
+		err = req.ToFile(file)
+	}
+	return
 }
