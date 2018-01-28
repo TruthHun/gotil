@@ -204,13 +204,18 @@ func CrawlFile(filelink string, savefolder string, timeout ...int) (file string,
 	if resp, err = req.DoRequest(); err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		os.MkdirAll(savefolder, os.ModePerm)
 		ct := strings.ToLower(resp.Header.Get("content-type"))
-		if ext, ok := ContentTypes[ct]; ok {
-			file = strings.TrimRight(savefolder, "/") + "/" + cryptil.Md5Crypt(filelink) + ext
-		} else {
-			if iext := filepath.Ext(strings.Split(filelink, "?")[0]); len(iext) > 0 {
-				file = strings.TrimRight(savefolder, "/") + "/" + cryptil.Md5Crypt(filelink) + iext
+		slice := strings.Split(resp.Header.Get("Content-Disposition"), "=")
+		filename := slice[len(slice)-1]
+		if len(strings.TrimSpace(filename)) == 0 {
+			if ext, ok := ContentTypes[ct]; ok {
+				filename = cryptil.Md5Crypt(filelink) + ext
+			} else {
+				if iext := filepath.Ext(strings.Split(filelink, "?")[0]); len(iext) > 0 {
+					filename = cryptil.Md5Crypt(filelink) + iext
+				}
 			}
 		}
+		file = strings.TrimRight(savefolder, "/") + "/" + filename
 		err = req.ToFile(file)
 	}
 	return
