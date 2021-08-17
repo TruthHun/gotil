@@ -28,8 +28,9 @@ func Unzip(zipFile, dest string) (err error) {
 	for _, f := range r.File {
 		if !f.FileInfo().IsDir() { //非目录，且不包含__MACOSX
 			//不要用defer来关闭，如果文件太多的话，会报too many open files 的错误
+			fname := f.Name
 
-			savePath := filepath.Join(dest, strings.TrimLeft(strings.TrimSpace(f.Name), "./"))
+			savePath := filepath.Join(dest, strings.TrimLeft(strings.TrimSpace(fname), "./"))
 			folder := filepath.Dir(savePath)
 			if strings.Contains(folder, "__MACOSX") {
 				continue
