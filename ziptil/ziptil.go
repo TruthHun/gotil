@@ -30,9 +30,12 @@ func Unzip(zipFile, dest string) (err error) {
 		if !f.FileInfo().IsDir() { //非目录，且不包含__MACOSX
 			//不要用defer来关闭，如果文件太多的话，会报too many open files 的错误
 			fname := f.Name
-			if fnameConv, errConv := strtil.ConvertToUTF8(fname); errConv == nil {
-				fname = fnameConv
+			if f.Flags == 0 {
+				if fnameConv, errConv := strtil.EncodeUTF8(fname, "gbk"); errConv == nil {
+					fname = fnameConv
+				}
 			}
+
 			savePath := filepath.Join(dest, strings.TrimLeft(strings.TrimSpace(fname), "./"))
 			folder := filepath.Dir(savePath)
 			if strings.Contains(folder, "__MACOSX") {

@@ -8,8 +8,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/axgle/mahonia"
-	"github.com/gogs/chardet"
-	"github.com/rogpeppe/go-charset/charset"
+	"github.com/saintfish/chardet"
+	"golang.org/x/net/html/charset"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/encoding/traditionalchinese"
 	"golang.org/x/text/transform"
@@ -42,8 +42,9 @@ func ConvertToUTF8(char string) (newChar string, err error) {
 
 	// 检测字符编码
 	enc := detectCharacter([]byte(newChar))
-	newChar, err = encodeUTF8(newChar, enc)
+	newChar, err = EncodeUTF8(newChar, enc)
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
 
@@ -60,11 +61,11 @@ func detectCharacter(cont []byte) string {
 	return res.Charset
 }
 
-//convert GBK to UTF-8
-func encodeUTF8(cont, enc string) (str string, err error) {
+// EncodeUTF8 将指定字符编码的字符串转为utf8
+func EncodeUTF8(cont, srcEncoding string) (str string, err error) {
 	var b []byte
 	in := strings.NewReader(cont)
-	switch strings.ToUpper(enc) {
+	switch strings.ToUpper(srcEncoding) {
 	case "GB18030", "GB-18030":
 		b, err = ioutil.ReadAll(transform.NewReader(in, simplifiedchinese.GB18030.NewDecoder()))
 	case "GBK", "GB2312", "GB-2312":
@@ -78,7 +79,7 @@ func encodeUTF8(cont, enc string) (str string, err error) {
 		return
 	default:
 		var rio io.Reader
-		rio, err = charset.NewReader(enc, strings.NewReader(cont))
+		rio, err = charset.NewReader(strings.NewReader(cont), srcEncoding)
 		if err != nil {
 			return
 		}
