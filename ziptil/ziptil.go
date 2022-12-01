@@ -3,7 +3,6 @@ package ziptil
 import (
 	"archive/zip"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -102,7 +101,6 @@ func Zip(dest string, filepath ...string) (err error) {
 	w := zip.NewWriter(fzip)
 	defer w.Close()
 	for _, file := range filelist {
-		fmt.Println(file.Prefix, file.Path)
 		if !file.IsDir {
 			filename := strings.TrimPrefix(file.Path, file.Prefix)
 			if fw, err := w.Create(strings.TrimLeft(filename, "./")); err != nil {
