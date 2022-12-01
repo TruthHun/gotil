@@ -3,6 +3,7 @@ package ziptil
 import (
 	"archive/zip"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -13,10 +14,10 @@ import (
 	"github.com/TruthHun/gotil/strtil"
 )
 
-//解压zip文件
-//@param			zipFile			需要解压的zip文件
-//@param			dest			需要解压到的目录
-//@return			err				返回错误
+// 解压zip文件
+// @param			zipFile			需要解压的zip文件
+// @param			dest			需要解压到的目录
+// @return			err				返回错误
 func Unzip(zipFile, dest string) (err error) {
 	dest = strings.TrimSuffix(dest, "/") + "/"
 	// 打开一个zip格式文件
@@ -61,10 +62,10 @@ func Unzip(zipFile, dest string) (err error) {
 	return nil
 }
 
-//压缩指定文件或文件夹
-//@param			dest			压缩后的zip文件目标，如/usr/local/hello.zip
-//@param			filepath		需要压缩的文件或者文件夹
-//@return			err				错误。如果返回错误，则会删除dest文件
+// 压缩指定文件或文件夹
+// @param			dest			压缩后的zip文件目标，如/usr/local/hello.zip
+// @param			filepath		需要压缩的文件或者文件夹
+// @return			err				错误。如果返回错误，则会删除dest文件
 func Zip(dest string, filepath ...string) (err error) {
 	if len(filepath) == 0 {
 		return errors.New("lack of file")
@@ -76,8 +77,11 @@ func Zip(dest string, filepath ...string) (err error) {
 	}
 	defer fzip.Close()
 
+	slashReplacer := strings.NewReplacer("\\", "/")
+
 	var filelist []filetil.FileList
 	for _, file := range filepath {
+		prefix := slashReplacer.Replace(file)
 		if info, err := os.Stat(file); err == nil {
 			if info.IsDir() { //目录，则扫描文件
 				if f, _ := filetil.ScanFiles(file); len(f) > 0 {
@@ -85,9 +89,10 @@ func Zip(dest string, filepath ...string) (err error) {
 				}
 			} else { //文件
 				filelist = append(filelist, filetil.FileList{
-					IsDir: false,
-					Name:  info.Name(),
-					Path:  file,
+					IsDir:  false,
+					Name:   info.Name(),
+					Path:   file,
+					Prefix: prefix,
 				})
 			}
 		} else {
@@ -97,8 +102,10 @@ func Zip(dest string, filepath ...string) (err error) {
 	w := zip.NewWriter(fzip)
 	defer w.Close()
 	for _, file := range filelist {
+		fmt.Println(file.Prefix, file.Path)
 		if !file.IsDir {
-			if fw, err := w.Create(strings.TrimLeft(file.Path, "./")); err != nil {
+			filename := strings.TrimPrefix(file.Path, file.Prefix)
+			if fw, err := w.Create(strings.TrimLeft(filename, "./")); err != nil {
 				return err
 			} else {
 				if filecontent, err := ioutil.ReadFile(file.Path); err != nil {
